@@ -2,14 +2,16 @@
 FROM gradle:jdk17 as jre-builder
 RUN jlink --add-modules java.base --output /slimjre
 
-# Build the application
+# Cache dependencies
 FROM gradle:jdk17 as builder
 
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
-COPY src/ ./src
+RUN gradle clean build --no-daemon --stacktrace
 
-RUN gradle build
+# Build the application
+COPY src/ ./src
+RUN gradle clean build --no-daemon --stacktrace
 
 # Create the runtime image
 FROM debian:bullseye-slim
